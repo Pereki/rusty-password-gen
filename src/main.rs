@@ -1,33 +1,47 @@
 use std::env;
+use std::process;
 use rand::Rng;
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    
+    let mut args = env::args();
+    args.next();
 
-    if args.len() < 2 {
-        eprintln!("No arguments provided.");
-        return;
-    }
+    let len_str = match args.next() {
+        Some(s) => s,
+        None => {
+            eprintln!("No arguments provided.");
+            process::exit(1);
+        }
+    };
 
-    if args.len() > 2 {
-        eprintln!("Only provide one argument.");
-        return;
-    }
-
-    let password_length : usize = args[1].parse().expect("The password could not be converted into an usize. Please provide a proper value.");
+    let password_length : usize = match len_str.parse() {
+        Ok(n) => n,
+        Err(_) => {
+            eprintln!("Invalid length provided.");
+            process::exit(1);
+        }
+    };
 
     println!("{}", generate_password(password_length));
 }
 
 
 fn generate_password(length: usize) -> String {
-    let charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let charset: [char; 62] = [
+        'A','B','C','D','E','F','G','H','I','J','K','L','M',
+        'N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
+        'a','b','c','d','e','f','g','h','i','j','k','l','m',
+        'n','o','p','q','r','s','t','u','v','w','x','y','z',
+        '0','1','2','3','4','5','6','7','8','9'
+    ];
     let mut password = String::with_capacity(length);
     let mut rng = rand::rng();
 
+
     for _ in 0..length {
-        let idx = rng.random_range(0..charset.len());
-        password.push(charset.chars().nth(idx).expect("Something went wrong while generating the password."));
+        let idx: usize = rng.random_range(0..charset.len());
+        password.push(charset[idx]);
     }
 
     password
